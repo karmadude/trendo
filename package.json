@@ -1,0 +1,25 @@
+{
+  "name": "trendo",
+  "version": "1.0.0",
+  "description": "Trends",
+  "main": "trendo.js",
+  "scripts": {
+    "test": "vows test/* --spec; echo"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:karmadude/trendo.git"
+  },
+  "keywords": [
+    "trends"
+  ],
+  "author": "Liji Jinaraj <karmadude@gmail.com> (http://liji.jinaraj.com/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/karmadude/trendo/issues"
+  },
+  "homepage": "https://github.com/karmadude/trendo",
+  "devDependencies": {
+    "vows": "^0.8.1"
+  }
+}
