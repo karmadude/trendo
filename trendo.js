@@ -66,26 +66,24 @@ var moment = require('moment');
   				.set('second', 0)
   				.set('millisecond', 0);
 
-  			if(d.unit !== 'hour') mDate.set('hour', 0);
+  			if(trend.unit !== 'hour') mDate.set('hour', 0);
 
   			if(shouldExcludeDate(mDate.toDate().getTime(), trend.timeframe)) return;
 
-  			switch(key) {
-  				case 'day':
-  					var hour = mDate.hour();
-  					offset = moment(response.day.counts[0].date).hour();
-  					index = (hour <= offset) ? offset - hour : offset + (hour - offset);
-  					response.day.counts[index].count++;
-  					response.day.counts[index].data.push(d);
-  					break;
-  				// case 'week':
-  				// 	var day = mDate.day();
-  				// 	offset = moment(response.week.counts[0].date).day();
-  				// 	index = (day <= offset) ? offset - day : offset + (day - offset);
-  				// 	response.week.counts[index].count++;
-  				// 	response.week.counts[index].data.push(d);
-  				// 	break;
-  			}
+  			response[key].counts.forEach(function(c) {
+  				var addData = false;
+
+  				if(response[key].unit === 'week' || response[key].unit === 'month') {
+  					addData = !shouldExcludeDate(mDate.toDate().getTime(), c.date);
+  				} else {
+  					addData = mDate.isSame(moment(c.date));
+  				}
+
+  				if(addData) {
+  					c.count++;
+  					c.data.push(d);
+  				}
+  			});
   		});
   	});
   	
@@ -110,13 +108,20 @@ var moment = require('moment');
   		
   	trend.timeframe.end = mNow.toDate().getTime();
   	for(var d = 0; d < trend.length; d++) {
-  		mNow = mNow.clone().subtract(d > 0 ? 1 : 0, unit);
+  		mNow = mNow.clone().subtract(d > 0 ? 1 : 0, unit + "s");
   		trend.counts[d] = {
   			text: mNow.format(typeof format === 'function' ? format(mNow, d) : format), 
   			date: mNow.toDate().getTime(), 
   			count: 0, 
   			data: []
   		};
+
+  		if(unit === "week" || unit === "month") {
+  			trend.counts[d].date = {
+  				start: mNow.clone().subtract(1, unit + "s").add(1, 'days').toDate().getTime(),
+  				end: mNow.clone().endOf('day').toDate().getTime()
+  			};
+  		}
   	}
   	trend.timeframe.start = mNow.toDate().getTime();
 

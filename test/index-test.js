@@ -80,9 +80,10 @@ suite.addBatch({
 
 	    	"should return formatted weeks in montly trend data": function(trends) {
 	    		trends.month.counts.forEach(function(trend, i) {
-	    			var date = moment(new Date(trend.date));
+	    			var start = moment(new Date(trend.date.start));
+	    			var end = moment(new Date(trend.date.end));
 	    			assert.equal(trend.text, 
-	    				date.format(trends.month.unitFormat(date, i)));
+	    				end.format(trends.month.unitFormat(end, i)));
 
 	    			if(i === 0) assert.equal(trend.text, "This Week");
 	    			if(i === 1) assert.equal(trend.text, "Last Week");
@@ -92,9 +93,10 @@ suite.addBatch({
 
 	    	"should return formatted months in yearly trend data": function(trends) {
 	    		trends.year.counts.forEach(function(trend, i) {
-	    			var date = moment(new Date(trend.date));
+	    			var start = moment(new Date(trend.date.start));
+	    			var end = moment(new Date(trend.date.end));
 	    			assert.equal(trend.text, 
-	    				date.format(trends.year.unitFormat(date, i)));
+	    				end.format(trends.year.unitFormat(end, i)));
 
 	    			if(i === 0) assert.equal(trend.text, "This Month");
 	    			if(i > 1) assert.equal(/^jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec/gi.test(trend.text), true);
@@ -105,13 +107,12 @@ suite.addBatch({
 	    "calling `trendo.trends([data,...])`": {
 	    	topic: function(trendo) {
 	    		var data = [];
-	    		var mDate = moment();
-	    		for(var i = 0; i < 24; i++) {
+	    		var mDate = moment().set({hour: 21, minute:0});
+	    		for(var i = 0; i < 24*10; i++) {
 	    			data.push({
 	    				date: mDate.clone().toDate().getTime(),
 	    				title: "d" + i
 	    			});
-	    			console.log(data[i].date);
 	    			mDate.subtract(1, 'hour');
 	    		}
 	    		return {data: data, trends: trendo.trends(data)};
@@ -119,7 +120,6 @@ suite.addBatch({
 
 	    	"should return last day trends in hours": function(d) {
 	    		d.trends.day.counts.forEach(function(c, i) {
-	    			console.log(i + ": " + c)
 	    			assert.equal(c.count, 1);
 
 	    			var mDate = moment(d.data[i].date)
@@ -127,6 +127,27 @@ suite.addBatch({
 	    				.set('second', 0)
 	    				.set('millisecond', 0);
 	    			assert.equal(c.date, mDate.toDate().getTime());
+	    		});
+	    	},
+
+	    	"should return last week trends in days": function(d) {
+	    		d.trends.week.counts.forEach(function(c, i) {
+	    			assert.equal(true, c.count > 20 && c.count <= 24);
+	    		});
+	    	},
+
+	    	"should return last month trends in weeks": function(d) {
+	    		d.trends.month.counts.forEach(function(c, i) {
+	    			if(i < 2)
+	    				assert.equal(true, c.count === 166 || c.count === 74);
+	    			else 
+	    				assert.equal(c.count, 0);
+	    		});
+	    	},
+
+	    	"should return last year trends in months": function(d) {
+	    		d.trends.year.counts.forEach(function(c, i) {
+	    			assert.equal(c.count, i > 0 ? 0 : d.data.length);
 	    		});
 	    	}
 	    }
