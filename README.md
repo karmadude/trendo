@@ -17,7 +17,7 @@ var data = [
     ...
 ];
 
-var trends = trendo.trend(data);
+var trends = trendo.trends(data);
 ```
 
 #### Response
